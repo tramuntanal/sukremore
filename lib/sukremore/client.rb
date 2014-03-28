@@ -55,7 +55,8 @@ module Sukremore
     end
 
     #
-    # deprecated?? use set_lead directly as it already inserts email.
+    # NOTE: To be used on Sugar versions from 6.5.
+    # Sugar versions below can use set_lead directly.
     #
     def insert_or_update_lead lead
       email_id= email_id?(lead[:email])
@@ -126,6 +127,9 @@ module Sukremore
 
     # Inserts a new lead into the SugarCRM.
     # 
+    # NOTE: To be used on Sugar versions around 6.0.
+    # Sugar versions greater must use inser_od_update_lead.
+    #
     # Accepted params (symbol keys) are:
     # - :lead_id <- may be null on create.
     # - :lead_desc
