@@ -2,9 +2,15 @@ require 'net/http'
 require 'net/https'
 require 'json'
 # 
+# To use the Sukremore::Client the first thing to do is call user_auth so that
+# the client authenticates with SugarCRM. Once authenticated, the rest of the calls
+# may be performed without authenticating again.
+# 
 # 
 module Sukremore
   class Client
+    include Sukremore
+
     def initialize url, config
       @url= url
       @config= config
@@ -19,7 +25,6 @@ module Sukremore
         'login', 
         :user_auth => {:user_name => @config['username'], :password => Digest::MD5.hexdigest(@config['password']), :version => @config['api_version']}
       )
-      puts "Rs:::#{sugar_resp}"
       @session_id = sugar_resp['id']
       raise "Error performing login to SugarCRM, returned session_id is nil" if @session_id.blank?
     end
@@ -49,6 +54,9 @@ module Sukremore
       return sugar_resp
     end
 
+    #
+    # deprecated?? use set_lead directly as it already inserts email.
+    #
     def insert_or_update_lead lead
       email_id= email_id?(lead[:email])
       unless email_id
@@ -113,33 +121,41 @@ module Sukremore
           :name_value_list => email_params
         }
       )
-      puts "RS:::::::::::::::#{sugar_resp}"
       return sugar_resp["id"] || nil
     end
 
-    # insert lead
+    # Inserts a new lead into the SugarCRM.
+    # 
+    # Accepted params (symbol keys) are:
+    # - :lead_id <- may be null on create.
+    # - :lead_desc
+    # - :name
+    # - :email
+    # 
     # Returns the id of the lead on success, otherwise returns nil.
     def set_lead lead=[]
       raise "really? add new a new empty account?" if lead.length == 0   
 
+      # TODO should be the same as the authentication user and this method should be destroyed!!!!
       web_user_id= retrieve_web_user()
 
-      email_params = []
-      email_params << {:name => "id", :value => lead[:lead_id]} if lead[:lead_id].present?
-      email_params << {:name => "date_entered", :value => Time.now} if lead[:lead_id].blank?
-      email_params << {:name => "date_modified", :value => Time.now}
-      email_params << {:name => "modified_user_id", :value => web_user_id} if lead[:lead_id].blank?
-      email_params << {:name => "created_by", :value => web_user_id}  if lead[:lead_id].blank?
+      names_values = []
+      names_values << {:name => "id", :value => lead[:lead_id]} if lead[:lead_id].present?
+      names_values << {:name => "date_entered", :value => Time.now} if lead[:lead_id].blank?
+      names_values << {:name => "created_by", :value => web_user_id}  if lead[:lead_id].blank?
+      names_values << {:name => "date_modified", :value => Time.now}
+      names_values << {:name => "modified_user_id", :value => web_user_id}
       if lead[:lead_desc].blank?
-        email_params << {:name => "description", :value => "Lead generated from #{@endpoint_name}-> [(#{Time.now})- #{lead[:text]}]"}
-      else
-        email_params << {:name => "description", :value => "#{lead[:lead_desc]} [(#{Time.now})- #{lead[:text]}]"}
+        names_values << {:name => "description", :value => "Lead generated from #{@endpoint_name}-> [(#{Time.now})- #{lead[:text]}]"}
+      elsif !(lead[:lead_desc].nil? or lead[:lead_desc].empty?)
+        names_values << {:name => "description", :value => "#{lead[:lead_desc]} [(#{Time.now})- #{lead[:text]}]"}
       end
-      email_params << {:name => "deleted", :value => false} if lead[:lead_id].blank?
-      email_params << {:name => "assigned_user_id", :value => nil} if lead[:lead_id].blank?
-      email_params << {:name => "last_name", :value => lead[:name]} if lead[:lead_id].blank?
-      email_params << {:name => "lead_source", :value => "Web Site"} if lead[:lead_id].blank?
-      email_params << {:name => "status", :value => "New"} if lead[:lead_id].blank?
+      names_values << {:name => "email1", :value => lead[:email]}
+      names_values << {:name => "deleted", :value => false} if lead[:lead_id].blank?
+#      names_values << {:name => "assigned_user_id", :value => nil}
+      names_values << {:name => "last_name", :value => lead[:name]}
+      names_values << {:name => "lead_source", :value => "Web Site"} if lead[:lead_id].blank?
+      names_values << {:name => "status", :value => "New"} if lead[:lead_id].blank?
 
       sugar_resp = sugar_do_rest_call(
         @url,
@@ -147,7 +163,7 @@ module Sukremore
         {
           :session => @session_id,
           :module_name => "Leads",
-          :name_value_list => email_params
+          :name_value_list => names_values
         }
       )
       return sugar_resp["id"] || nil
@@ -156,6 +172,7 @@ module Sukremore
     # GET
     # Get the user named user_web
     # Returns the given user or nil if not found.
+    # TODO should be the same as the authentication user and this method should be destroyed!!!!
     def retrieve_web_user
       sugar_resp = sugar_do_rest_call(
         @url, 
@@ -235,15 +252,19 @@ module Sukremore
       # Uncoment this two lines for use SSL
       # http.use_ssl = true
       # http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-  
+
+      json_params= params.to_json
+      logger.debug "rest_call request params:#{json_params}"
       post_data = {
         :method => method,
         :input_type => 'JSON',
         :response_type => 'JSON',
-        :rest_data => params.to_json,
+        :rest_data => json_params,
       }
       http_resp = Net::HTTP.post_form(uri, post_data)
-      JSON.parse(http_resp.body)
+      json_rs= JSON.parse(http_resp.body)
+      logger.debug "rest_call response:::#{json_rs}"
+      json_rs
     end
   end
 end
