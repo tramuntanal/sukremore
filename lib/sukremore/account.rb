@@ -85,10 +85,6 @@ module Sukremore
         offset= sugar_resp['next_offset'] unless sugar_resp.nil?
         opts[:offset]= offset
         sugar_resp= query_accounts(opts)
-        puts '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'
-        puts sugar_resp['result_count']
-        puts sugar_resp['next_offset']
-        puts "#{sugar_resp['result_count'] > 0} AND #{sugar_resp['result_count'] != sugar_resp['next_offset']}"
         pending_pages= (sugar_resp['result_count'] > 0) && (sugar_resp['result_count'] != sugar_resp['next_offset'])
         sugar_resp['entry_list'].each do |sa|
           accounts << import_sugar_entity(sa)
