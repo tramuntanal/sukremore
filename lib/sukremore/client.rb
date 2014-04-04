@@ -10,7 +10,9 @@ require 'sukremore/account'
 # the client authenticates with SugarCRM. Once authenticated, the rest of the calls
 # may be performed without authenticating again.
 # 
-# 
+# For more documentation on the SugarCRM Rest API check:
+# http://xxx-crm.coditramuntana.com/service/v2/rest.php
+#
 module Sukremore
   class Client
     include Sukremore
@@ -106,6 +108,9 @@ module Sukremore
 
     #
     # Do a POST to SugarCRM
+    # 
+    # NOTE: Order of +params+ IS important.
+    # 
     #
     def sugar_do_rest_call(url, method, params = {})
       uri = URI(url)
@@ -116,7 +121,7 @@ module Sukremore
       # http.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
       json_params= params.to_json
-      logger.debug "rest_call request params:#{json_params}"
+      logger.debug "rest_call request method: #{method} params:#{json_params}"
       post_data = {
         :method => method,
         :input_type => 'JSON',
@@ -124,9 +129,24 @@ module Sukremore
         :rest_data => json_params,
       }
       http_resp = Net::HTTP.post_form(uri, post_data)
+      logger.debug "rest_call response:::#{http_resp}=#{http_resp.body}"
       json_rs= JSON.parse(http_resp.body)
-      logger.debug "rest_call response:::#{json_rs}"
+      if json_rs['number'] == 11
+        # 11=> Invalid Session ID
+        raise http_respt.body
+      end
       json_rs
+    end
+
+    #
+    # Converts a Sugar Entity into a simple Ruby hash.
+    #
+    def import_sugar_entity sugar_entity
+      entity= {}
+      sugar_entity['name_value_list'].values.each do |field|
+        entity[field['name']]= field['value']
+      end
+      entity
     end
   end
 end
