@@ -81,8 +81,8 @@ module Sukremore
       return sugar_resp["entry_list"]
     end
 
-    # SET
-    # Insert relation between modules
+    # SET ENTRY
+    # Creates or updates an entity
     def set_entry module_name, entry
       names_values = []
       names_values << {:name => "id", :value => entry[:id]} if entry[:id].present?
