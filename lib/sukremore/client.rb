@@ -18,7 +18,7 @@ module Sukremore
     include Sukremore
     include Account
     include Email
-    include Lead
+    attr_reader :endpoint_name
 
     def initialize url, config
       @url= url
@@ -37,6 +37,10 @@ module Sukremore
       @session_id = sugar_resp['id']
       @logged_user= find_user_by_name @config['username']
       raise "Error performing login to SugarCRM, returned session_id is nil" if @session_id.blank?
+    end
+
+    def from_leads
+      Lead.new(self)
     end
 
     # GET
@@ -72,7 +76,17 @@ module Sukremore
 
     # SET
     # Insert relation between modules
-    def set_entry module_name, names_values
+    def set_entry module_name, entry
+      names_values = []
+      names_values << {:name => "id", :value => entry[:id]} if entry[:id].present?
+      names_values << {:name => "date_entered", :value => Time.now} if entry[:id].blank?
+      names_values << {:name => "created_by", :value => @logged_user['id']}  if entry[:id].blank?
+      names_values << {:name => "date_modified", :value => Time.now}
+      names_values << {:name => "modified_user_id", :value => @logged_user['id']}
+      entry.entries.each do |field, value|
+        names_values << {:name => field, :value => value}
+      end
+
       sugar_resp= sugar_do_rest_call(
         @url,
         'set_entry',
@@ -82,9 +96,19 @@ module Sukremore
           :name_value_list => names_values
         }
       )
-      sugar_resp
+      sugar_resp['id']
     end
 
+    def get_entry_list module_name, params
+      sugar_rs= sugar_do_rest_call(
+        @url,
+        'get_entry_list',
+        { :session => @session_id,
+          :module_name => module_name, 
+        }.merge(params)
+      )
+      sugar_rs['id']
+    end
     # SET
     # Insert relation between modules
     def set_relationship src_module_name, src_module_id, link_field_name, related_ids

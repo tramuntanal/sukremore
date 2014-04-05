@@ -107,12 +107,7 @@ module Sukremore
         @url,
         'get_entry_list',
         { :session => @session_id, 
-          :module_name => MODULE_NAME, 
-  #          :query => sql_cond, # the SQL WHERE clause without the word “where”.
-#          :order_by => '', # the SQL ORDER BY clause without the phrase “order by”.
-  #        :max_results => '10',
-          #:link_name_to_fields_array => [{:name => 'id'}, {:value => ['id', 'name']}],
-
+          :module_name => MODULE_NAME,
         }.merge(params)
       )
 
