@@ -1,9 +1,10 @@
 require 'net/http'
 require 'net/https'
 require 'json'
-require 'sukremore/lead'
-require 'sukremore/email'
-require 'sukremore/account'
+require 'sukremore/modules/base'
+require 'sukremore/modules/account'
+require 'sukremore/modules/email'
+require 'sukremore/modules/lead'
 
 # 
 # To use the Sukremore::Client the first thing to do is call user_auth so that
@@ -16,8 +17,6 @@ require 'sukremore/account'
 module Sukremore
   class Client
     include Sukremore
-    include Account
-    include Email
     attr_reader :endpoint_name
 
     def initialize url, config
@@ -41,6 +40,14 @@ module Sukremore
 
     def from_leads
       Lead.new(self)
+    end
+
+    def from_accounts
+      Account.new(self)
+    end
+
+    def from_emails
+      Email.new(self)
     end
 
     # GET
@@ -99,7 +106,7 @@ module Sukremore
       sugar_resp['id']
     end
 
-    def get_entry_list module_name, params
+    def get_entry_list module_name, params={}
       sugar_rs= sugar_do_rest_call(
         @url,
         'get_entry_list',
