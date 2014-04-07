@@ -39,15 +39,15 @@ module Sukremore
     end
 
     def from_leads
-      Lead.new(self)
+      Modules::Lead.new(self)
     end
 
     def from_accounts
-      Account.new(self)
+      Modules::Account.new(self)
     end
 
     def from_emails
-      Email.new(self)
+      Modules::Email.new(self)
     end
 
     # GET
