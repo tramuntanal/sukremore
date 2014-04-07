@@ -68,6 +68,10 @@ module Sukremore
         return sugar_resp
       end
 
+      def create fields
+        
+      end
+
       #
       # Opts:
       # - +select_fields+ defaults to all.
