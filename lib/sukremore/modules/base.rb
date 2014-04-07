@@ -2,6 +2,7 @@
 module Sukremore
   module Modules
     class Base
+      include Sukremore
       def initialize client
         @client= client
       end

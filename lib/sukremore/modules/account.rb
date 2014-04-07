@@ -83,7 +83,7 @@ module Sukremore
           sugar_resp= query_accounts(opts)
           pending_pages= (sugar_resp['result_count'] > 0) && (sugar_resp['result_count'] != sugar_resp['next_offset'])
           sugar_resp['entry_list'].each do |sa|
-            accounts << import_sugar_entity(sa)
+            accounts << @client.import_sugar_entity(sa)
           end
         end
         accounts
@@ -99,7 +99,7 @@ module Sukremore
         params[:deleted]= opts[:deleted].nil? ? 0 : opts[:deleted]
         params[:select_fields]= opts[:select_fields] unless opts[:select_fields].nil?
         params[:offset]= opts[:offset] unless opts[:offset].nil?
-        sugar_resp = @client.get_entry_list(MODULE_NAME)
+        sugar_resp = @client.get_entry_list(MODULE_NAME, params)
 
         return sugar_resp
       end

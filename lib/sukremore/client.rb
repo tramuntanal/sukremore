@@ -114,7 +114,7 @@ module Sukremore
           :module_name => module_name, 
         }.merge(params)
       )
-      sugar_rs['id']
+      sugar_rs
     end
     # SET
     # Insert relation between modules
@@ -130,9 +130,19 @@ module Sukremore
           :related_ids => related_ids,
         }
       )
-      return sugar_resp["id"] || nil
+      sugar_resp["id"]
     end
 
+    #
+    # Converts a Sugar Entity into a simple Ruby hash.
+    #
+    def import_sugar_entity sugar_entity
+      entity= {}
+      sugar_entity['name_value_list'].values.each do |field|
+        entity[field['name']]= field['value']
+      end
+      entity
+    end
     #--------------------------------------------------------------------------
     private
     #--------------------------------------------------------------------------
@@ -167,17 +177,6 @@ module Sukremore
         raise http_respt.body
       end
       json_rs
-    end
-
-    #
-    # Converts a Sugar Entity into a simple Ruby hash.
-    #
-    def import_sugar_entity sugar_entity
-      entity= {}
-      sugar_entity['name_value_list'].values.each do |field|
-        entity[field['name']]= field['value']
-      end
-      entity
     end
   end
 end
