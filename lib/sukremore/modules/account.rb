@@ -69,7 +69,7 @@ module Sukremore
       end
 
       def create fields
-        
+        @client.set_entry MODULE_NAME, fields
       end
 
       #
