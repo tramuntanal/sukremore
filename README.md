@@ -21,6 +21,8 @@ Or install it yourself as:
 
 TODO: Write usage instructions here
 
+Documentation for the WS's API can be found at the CRM itself: http://crm.coditramuntana.com/service/v2/rest.php
+
 ## Contributing
 
 1. Fork it

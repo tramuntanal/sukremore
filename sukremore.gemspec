@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Oliver HV"]
   spec.email         = ["oliver.hv@coditramuntana.com"]
   spec.description   = %q{Client for the Rest SugarCRM webservice.}
-  spec.summary       = %q{In this very first version only limited access to Account and Contact models is implemented.}
+  spec.summary       = %q{In this very first version only limited access to Account, Email and Lead models is implemented.}
   spec.homepage      = "http://www.coditramuntana.com"
   spec.license       = "MIT"
 
