@@ -1,6 +1,3 @@
-sukremore
-=========
-
 # Sukremore
 
 Client for the Rest SugarCRM webservice.
