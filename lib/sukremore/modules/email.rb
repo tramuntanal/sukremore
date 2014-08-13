@@ -18,7 +18,7 @@ module Sukremore
           }
         )
         if sugar_resp['entry_list'].any?
-          sugar_resp['entry_list'][0]['email_id']
+          sugar_resp['entry_list'][0]['id']
         else
           false
         end
